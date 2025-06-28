@@ -1,7 +1,4 @@
-enum TransactionType {
-  income,
-  expense,
-}
+enum TransactionType { expense, income }
 
 class Transaction {
   final TransactionType type;
@@ -14,17 +11,15 @@ class Transaction {
     required this.date,
   });
 
-  // JSON形式に変換
   Map<String, dynamic> toJson() => {
-    'type': type.name, // enum → 文字列に変換
+    'type': type.name,
     'amount': amount,
     'date': date.toIso8601String(),
   };
 
-  // JSONから生成
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
-      type: TransactionType.values.byName(json['type']), // 文字列 → enum
+      type: TransactionType.values.firstWhere((e) => e.name == json['type']),
       amount: json['amount'],
       date: DateTime.parse(json['date']),
     );

@@ -3,27 +3,29 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/transaction.dart';
 
 class TransactionStorage {
-  static const _key = 'transactions';
+  static const String _key = 'transactions';
 
-  /// 保存
+  /// 取引データを保存する（List<String>として）
   static Future<void> saveTransactions(List<Transaction> transactions) async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonList = transactions.map((t) => t.toJson()).toList();
-    prefs.setString(_key, jsonEncode(jsonList));
+    final jsonList = transactions.map((t) => json.encode(t.toJson())).toList();
+    await prefs.setStringList(_key, jsonList);
   }
 
-  /// 読み込み
+  /// 保存された取引データを読み込む（List<Transaction>に変換）
   static Future<List<Transaction>> loadTransactions() async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString(_key);
+    final jsonList = prefs.getStringList(_key);
 
-    if (jsonString == null) return [];
+    if (jsonList == null) return [];
 
-    final List<dynamic> decoded = jsonDecode(jsonString);
-    return decoded.map((item) => Transaction.fromJson(item)).toList();
+    return jsonList.map((e) {
+      final decoded = json.decode(e);
+      return Transaction.fromJson(decoded);
+    }).toList();
   }
 
-  /// 削除（テストやリセット用に）
+  /// データを削除する（デバッグ用途など）
   static Future<void> clearTransactions() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_key);

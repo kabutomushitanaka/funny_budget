@@ -11,13 +11,10 @@ class TransactionInputScreen extends StatefulWidget {
 
 class _TransactionInputScreenState extends State<TransactionInputScreen> {
   final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
   TransactionType _selectedType = TransactionType.expense;
 
   void _saveTransaction() async {
     final amount = int.tryParse(_amountController.text);
-    final note = _noteController.text;
-
     if (amount == null || amount <= 0) return;
 
     final newTransaction = Transaction(
@@ -30,7 +27,17 @@ class _TransactionInputScreenState extends State<TransactionInputScreen> {
     current.add(newTransaction);
     await TransactionStorage.saveTransactions(current);
 
-    Navigator.pop(context); // 入力画面を閉じる
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("保存しました！")),
+      );
+    }
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (context.mounted) {
+        Navigator.pop(context, newTransaction);
+      }
+    });
   }
 
   @override
@@ -45,10 +52,6 @@ class _TransactionInputScreenState extends State<TransactionInputScreen> {
               controller: _amountController,
               decoration: const InputDecoration(labelText: "金額"),
               keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: _noteController,
-              decoration: const InputDecoration(labelText: "メモ（任意）"),
             ),
             const SizedBox(height: 16),
             Row(
